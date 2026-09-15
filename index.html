@@ -400,12 +400,12 @@
 
     const SUPABASE_URL = 'https://weadiwxbsiddfdvxjxob.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_OiQsMhLPocHCuiVsJwiCGw_i0tyfAbt';
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let tasks = [];
 
     async function loadTasks() {
-      const { data, error } = await supabase.from('tasks').select('*').order('id', { ascending: true });
+      const { data, error } = await sb.from('tasks').select('*').order('id', { ascending: true });
       if (error) {
         console.error('Error cargando tasks:', error);
         alert('No se pudieron cargar los datos desde Supabase. Revisá la consola.');
@@ -421,7 +421,7 @@
       else renderTable();
     }
 
-    supabase
+    sb
       .channel('tasks-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, () => {
         loadTasks();
@@ -728,7 +728,7 @@
       if (!task) return;
       task.status = newStatus;
       renderTable();
-      const { error } = await supabase.from('tasks').update({ status: newStatus }).eq('id', id);
+      const { error } = await sb.from('tasks').update({ status: newStatus }).eq('id', id);
       if (error) { console.error(error); alert('No se pudo guardar el cambio de estado.'); }
     }
 
@@ -736,7 +736,7 @@
       if (!confirm('¿Eliminar esta tarea del plan?')) return;
       tasks = tasks.filter(t => t.id !== id);
       renderTable();
-      const { error } = await supabase.from('tasks').delete().eq('id', id);
+      const { error } = await sb.from('tasks').delete().eq('id', id);
       if (error) { console.error(error); alert('No se pudo eliminar la tarea.'); }
     }
 
@@ -798,11 +798,11 @@
       closeModal('taskModal');
 
       if (editId) {
-        const { error } = await supabase.from('tasks').update(base).eq('id', editId);
+        const { error } = await sb.from('tasks').update(base).eq('id', editId);
         if (error) { console.error(error); alert('No se pudo guardar la edición.'); return; }
       } else {
         const newTask = { id: Date.now(), ...base, status: 'Sin Iniciar', comments: [] };
-        const { error } = await supabase.from('tasks').insert(newTask);
+        const { error } = await sb.from('tasks').insert(newTask);
         if (error) { console.error(error); alert('No se pudo crear la tarea.'); return; }
       }
 
@@ -851,7 +851,7 @@
       renderComments(task);
       document.getElementById('commentText').value = '';
 
-      const { error } = await supabase.from('tasks').update({ comments: task.comments }).eq('id', id);
+      const { error } = await sb.from('tasks').update({ comments: task.comments }).eq('id', id);
       if (error) { console.error(error); alert('No se pudo guardar la nota.'); }
     }
 
